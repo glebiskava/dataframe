@@ -1,11 +1,15 @@
-name: Publish to GitHub Packages
+name: Deploy to GitHub Packages
 
 on:
   push:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
-  publish:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -18,10 +22,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Configure Maven settings
+      - name: Set up Maven settings
         run: mkdir -p ~/.m2 && cp .github/settings.xml ~/.m2/settings.xml
 
-      - name: Deploy to GitHub Packages
+      - name: Deploy with Maven
         run: mvn deploy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

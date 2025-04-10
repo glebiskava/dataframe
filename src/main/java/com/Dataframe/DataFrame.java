@@ -57,5 +57,53 @@ public class DataFrame {
     public Series<?> getColumn(String name) {
         return columnMap.get(name);
     }
+    private boolean compareInt(int a, String op, int b) {
+        switch (op) {
+            case ">":
+                return a > b;
+            case "<":
+                return a < b;
+            case ">=":
+                return a >= b;
+            case "<=":
+                return a <= b;
+            case "=":
+                return a == b;
+            case "!=":
+                return a != b;
+            default:
+                throw new IllegalArgumentException("Unsupported operator: " + op);
+        }
+    }
+
+    private boolean compareDouble(double a, String op, double b) {
+        switch (op) {
+            case ">":
+                return a > b;
+            case "<":
+                return a < b;
+            case ">=":
+                return a >= b;
+            case "<=":
+                return a <= b;
+            case "=":
+                return a == b;
+            case "!=":
+                return a != b;
+            default:
+                throw new IllegalArgumentException("Unsupported operator: " + op);
+        }
+    }
+
+    private boolean compareString(String a, String op, String b) {
+        switch (op) {
+            case "=":
+                return a.equals(b);
+            case "!=":
+                return !a.equals(b);
+            default:
+                throw new IllegalArgumentException("Unsupported operator for String: " + op);
+        }
+    }
 
 }

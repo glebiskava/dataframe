@@ -1,4 +1,4 @@
-package com.Interface;
+package com.Series;
 
 public interface NumericSeries <T extends Number> {
     double mean();

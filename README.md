@@ -1,8 +1,8 @@
 # DataFrame Project
 
-![License](https://img.shields.io/badge/LICENSE-Passing-1B56FD)
-[![Java SDK](https://img.shields.io/badge/JAVA-17.0.14-E78B48)](https://www.oracle.com/java/technologies/javase/17-0-14-relnotes.html)
-[![Maven](https://img.shields.io/badge/Maven-17-F7374F)](https://maven.apache.org/download.cgi)
+[![License](https://img.shields.io/badge/LICENSE-MIT-1B56FD?logo=github&logoColor=white)](https://github.com/your-username/your-repo-name/blob/main/LICENSE)
+[![Java SDK](https://img.shields.io/badge/JAVA-17.0.14-E78B48?logo=openjdk&logoColor=white)](https://www.oracle.com/java/technologies/javase/17-0-14-relnotes.html) 
+[![Maven](https://img.shields.io/badge/Maven-3.8.6-F7374F?logo=apachemaven)](https://maven.apache.org/download.cgi)
 
 
 This is a project on making a Java library for tabular data manipulation with CSV support

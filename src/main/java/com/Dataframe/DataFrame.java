@@ -105,5 +105,4 @@ public class DataFrame {
                 throw new IllegalArgumentException("Unsupported operator for String: " + op);
         }
     }
-
 }

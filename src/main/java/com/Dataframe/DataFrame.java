@@ -57,7 +57,6 @@ public class DataFrame {
     public Series<?> getColumn(String name) {
         return columnMap.get(name);
     }
-
     private boolean compareInt(int a, String op, int b) {
         switch (op) {
             case ">":
@@ -106,5 +105,4 @@ public class DataFrame {
                 throw new IllegalArgumentException("Unsupported operator for String: " + op);
         }
     }
-
 }

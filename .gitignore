@@ -6,8 +6,4 @@ target/
 *.iml
 *.log
 *.csv
-<<<<<<< HEAD
 .vscode
-=======
-.vscode/
->>>>>>> dev

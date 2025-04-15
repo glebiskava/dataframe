@@ -74,7 +74,7 @@ public class DataFrameTest {
         assertEquals(75, df.sum("age"));
         assertEquals(20, df.min("age"));
         assertEquals(30, df.max("age"));
-        assertEquals(3, df.count("age")); // One null value
+        assertEquals(3, df.count("age")); // a null value
     }
 
     @Test
@@ -82,5 +82,26 @@ public class DataFrameTest {
         DataFrame empty = new DataFrame(List.of());
         assertEquals(0, empty.size());
         assertArrayEquals(new String[0], empty.getHeaders());
+    }
+
+    @Test
+    void testFilterWithNullValues() {
+        DataFrame filtered = df.filter("name != null");
+        assertEquals(3, filtered.size());
+        assertTrue(filtered.getColumn("name").get(0) != null);
+        assertTrue(filtered.getColumn("name").get(1) != null);
+        assertTrue(filtered.getColumn("name").get(2) != null);
+    }
+
+    @Test
+    void testMeanOnEmptyColumn() {
+        List<Series<?>> columns = List.of(new IntSeries("empty", new Integer[] { null, null, null }));
+        DataFrame emptyDf = new DataFrame(columns);
+        assertEquals(0.0, emptyDf.mean("empty"));
+    }
+
+    @Test
+    void testFilterInvalidExpression() {
+        assertThrows(IllegalArgumentException.class, () -> df.filter("age > invalid"));
     }
 }

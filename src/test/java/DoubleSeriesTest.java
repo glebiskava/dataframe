@@ -66,4 +66,21 @@ public class DoubleSeriesTest {
         assertEquals(0.0, series.min());
         assertEquals(0.0, series.max());
     }
+
+    @Test
+    void testSelectEmptyIndices() {
+        Series<Double> selected = doubleSeries.select(new Integer[] {});
+        assertEquals(0, selected.size());
+    }
+
+    @Test
+    void testInvalidIndexInSelect() {
+        assertThrows(IndexOutOfBoundsException.class, () -> doubleSeries.select(new Integer[] { 10 }));
+    }
+
+    @Test
+    void testMeanWithSingleValue() {
+        DoubleSeries single = new DoubleSeries("single", new Double[] { 42.0 });
+        assertEquals(42.0, single.mean());
+    }
 }

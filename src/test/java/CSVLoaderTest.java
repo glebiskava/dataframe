@@ -38,4 +38,30 @@ public class CSVLoaderTest {
         assertEquals("Double", df.getColumn("doubleCol").getType());
         assertEquals("String", df.getColumn("stringCol").getType());
     }
+
+    @Test
+    void testLoadCSVWithMissingValues() throws IOException {
+
+        String csvContent = "name,age\nAlice,\nBob,30\n,35.5";
+        Path tempFile = Files.createTempFile("test", ".csv");
+        Files.write(tempFile, csvContent.getBytes());
+
+        DataFrame df = CSVLoader.fromCSV(tempFile.toString());
+        assertEquals(3, df.size());
+        assertNull(df.getColumn("age").get(0));
+        assertNull(df.getColumn("name").get(2));
+    }
+
+    @Test
+    void testLoadCSVWithInvalidNumberFormat() throws IOException {
+        String csvContent = "name,age\nAlice,25\nBob,invalid\nCharlie,35.5";
+        Path tempFile = Files.createTempFile("test", ".csv");
+        Files.write(tempFile, csvContent.getBytes());
+
+        DataFrame df = CSVLoader.fromCSV(tempFile.toString());
+        assertEquals(3, df.size());
+        assertEquals("String", df.getColumn("age").getType()); // The age column will be inferred as a String due to
+                                                               // invalid value.
+    }
+
 }

@@ -66,4 +66,32 @@ public class IntSeriesTest {
         assertEquals(0, series.min());
         assertEquals(0, series.max());
     }
+
+    @Test
+    void testSelectDuplicateIndices() {
+        Series<Integer> selected = intSeries.select(new Integer[] { 0, 0, 2 }); // [1 1 3] -> take from the setUp values at index 0, 0 ,2
+
+        assertEquals(3, selected.size());
+        assertEquals(1, selected.get(0));
+//        System.out.println(selected.get(0));
+        assertEquals(1, selected.get(1));
+//        System.out.println(selected.get(1));
+        assertEquals(3, selected.get(2));
+//        System.out.println(selected.get(2));
+
+    }
+
+    @Test
+    void testMaxOnSingleValue() {
+        IntSeries single = new IntSeries("single", new Integer[] { 100 });
+        assertEquals(100, single.max());
+    }
+
+    @Test
+    void testNegativeValues() {
+        IntSeries negative = new IntSeries("neg", new Integer[] { -1, -5, null, 0 });
+        assertEquals(-5, negative.min());
+        assertEquals(0, negative.max());
+        assertEquals(-2.0, negative.mean()); // (-1 + -5) / 3
+    }
 }

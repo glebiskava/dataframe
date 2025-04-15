@@ -43,4 +43,21 @@ public class StringSeriesTest {
     void testType() {
         assertEquals("String", stringSeries.getType());
     }
+
+    @Test
+    void testSelectWithNullIndices() {
+        assertThrows(NullPointerException.class, () -> stringSeries.select(null));
+    }
+
+    @Test
+    void testCountEmptyStrings() {
+        StringSeries emptyStrings = new StringSeries("empty", new String[] { "", "", null });
+        assertEquals(2, emptyStrings.count());
+    }
+
+    @Test
+    void testGetTypeConsistency() {
+        StringSeries empty = new StringSeries("empty", new String[] {});
+        assertEquals("String", empty.getType());
+    }
 }

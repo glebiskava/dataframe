@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataFrame.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">dataframe</a> &gt; <a href="index.source.html" class="el_package">com.Dataframe</a> &gt; <span class="el_source">DataFrame.java</span></div><h1>DataFrame.java</h1><pre class="source lang-java linenums">package com.Dataframe;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.Series.NumericSeries;
+import com.Series.Series;
+
+public class DataFrame {
+    private final List&lt;Series&lt;?&gt;&gt; columns;
+    private final int rowCount;
+    private final Map&lt;String, Series&lt;?&gt;&gt; columnMap;
+
+<span class="fc" id="L19">    public DataFrame(List&lt;Series&lt;?&gt;&gt; columns) {</span>
+<span class="fc" id="L20">        this.columns = new ArrayList&lt;&gt;(columns);</span>
+<span class="fc" id="L21">        this.columnMap = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        for (Series&lt;?&gt; series : columns) {</span>
+<span class="fc" id="L23">            columnMap.put(series.getName(), series);</span>
+<span class="fc" id="L24">        }</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        this.rowCount = columns.isEmpty() ? 0 : columns.get(0).size();</span>
+<span class="fc" id="L26">    }</span>
+
+    public String[] getHeaders() {
+<span class="fc" id="L29">        return columns.stream().map(Series::getName).toArray(String[]::new);</span>
+    }
+
+    public String[][] getRows(int start, int end) {
+<span class="fc" id="L33">        start = Math.max(start, 0);</span>
+<span class="fc" id="L34">        end = Math.min(end, rowCount);</span>
+<span class="fc" id="L35">        String[][] rows = new String[end - start][columns.size()];</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        for (int i = start; i &lt; end; i++) {</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            for (int j = 0; j &lt; columns.size(); j++) {</span>
+<span class="fc" id="L38">                Object val = columns.get(j).get(i);</span>
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">                rows[i - start][j] = val == null ? &quot;null&quot; : val.toString();</span>
+            }
+        }
+<span class="fc" id="L42">        return rows;</span>
+    }
+
+    public void print() {
+<span class="nc" id="L46">        DataFramePrinter.print(this, 0, rowCount);</span>
+<span class="nc" id="L47">    }</span>
+
+    public void head(int n) {
+<span class="nc" id="L50">        DataFramePrinter.print(this, 0, Math.min(n, rowCount));</span>
+<span class="nc" id="L51">    }</span>
+
+    public void tail(int n) {
+<span class="nc" id="L54">        DataFramePrinter.print(this, Math.max(0, rowCount - n), rowCount);</span>
+<span class="nc" id="L55">    }</span>
+
+    public DataFrame selectRows(int... indices) {
+<span class="pc bpc" id="L58" title="2 of 4 branches missed.">        Integer[] validIndices = Arrays.stream(indices).filter(i -&gt; i &gt;= 0 &amp;&amp; i &lt; rowCount).boxed()</span>
+<span class="fc" id="L59">                .toArray(Integer[]::new);</span>
+<span class="fc" id="L60">        List&lt;Series&lt;?&gt;&gt; newColumns = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        for (Series&lt;?&gt; col : columns) {</span>
+<span class="fc" id="L62">            newColumns.add(col.select(validIndices));</span>
+<span class="fc" id="L63">        }</span>
+<span class="fc" id="L64">        return new DataFrame(newColumns);</span>
+    }
+
+    public DataFrame selectColumns(String... columnNames) {
+<span class="fc" id="L68">        List&lt;Series&lt;?&gt;&gt; newColumns = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        for (String name : columnNames) {</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">            if (!columnMap.containsKey(name))</span>
+<span class="fc" id="L71">                throw new IllegalArgumentException(&quot;Column not found: &quot; + name);</span>
+<span class="fc" id="L72">            newColumns.add(columnMap.get(name));</span>
+        }
+<span class="fc" id="L74">        return new DataFrame(newColumns);</span>
+    }
+
+    public DataFrame filter(String condition) {
+<span class="fc" id="L78">        Condition c = parseCondition(condition);</span>
+<span class="fc" id="L79">        List&lt;Integer&gt; indices = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        for (int i = 0; i &lt; rowCount; i++) {</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">            if (evaluateCondition(c, i))</span>
+<span class="fc" id="L82">                indices.add(i);</span>
+        }
+<span class="fc" id="L84">        int[] indexArray = indices.stream().mapToInt(Integer::intValue).toArray();</span>
+<span class="fc" id="L85">        return selectRows(indexArray);</span>
+    }
+
+    private static Condition parseCondition(String condition) {
+<span class="fc" id="L89">        Pattern pattern = Pattern.compile(&quot;(\\w+)\\s*([&gt;&lt;=!]+)\\s*([\\w.]+)&quot;);</span>
+<span class="fc" id="L90">        Matcher matcher = pattern.matcher(condition.trim());</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        if (!matcher.matches())</span>
+<span class="nc" id="L92">            throw new IllegalArgumentException(&quot;Invalid condition format&quot;);</span>
+<span class="fc" id="L93">        return new Condition(matcher.group(1), matcher.group(2), matcher.group(3));</span>
+    }
+
+    private boolean evaluateCondition(Condition c, int row) {
+<span class="fc" id="L97">        Series&lt;?&gt; series = columnMap.get(c.column);</span>
+<span class="fc" id="L98">        Object value = series.get(row);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (value == null)</span>
+<span class="fc" id="L100">            return false;</span>
+
+<span class="pc bpc" id="L102" title="2 of 4 branches missed.">        switch (series.getType()) {</span>
+            case &quot;Integer&quot;:
+<span class="fc" id="L104">                return compareInt((Integer) value, c.operator, Integer.parseInt(c.value));</span>
+            case &quot;Double&quot;:
+<span class="nc" id="L106">                return compareDouble((Double) value, c.operator, Double.parseDouble(c.value));</span>
+            case &quot;String&quot;:
+<span class="fc" id="L108">                return compareString(value.toString(), c.operator, c.value);</span>
+            default:
+<span class="nc" id="L110">                throw new IllegalArgumentException(&quot;Unsupported column type for filtering&quot;);</span>
+        }
+    }
+
+    private boolean compareInt(int a, String op, int b) {
+<span class="pc bpc" id="L115" title="6 of 7 branches missed.">        switch (op) {</span>
+            case &quot;&gt;&quot;:
+<span class="fc bfc" id="L117" title="All 2 branches covered.">                return a &gt; b;</span>
+            case &quot;&lt;&quot;:
+<span class="nc bnc" id="L119" title="All 2 branches missed.">                return a &lt; b;</span>
+            case &quot;&gt;=&quot;:
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                return a &gt;= b;</span>
+            case &quot;&lt;=&quot;:
+<span class="nc bnc" id="L123" title="All 2 branches missed.">                return a &lt;= b;</span>
+            case &quot;=&quot;:
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                return a == b;</span>
+            case &quot;!=&quot;:
+<span class="nc bnc" id="L127" title="All 2 branches missed.">                return a != b;</span>
+            default:
+<span class="nc" id="L129">                throw new IllegalArgumentException(&quot;Unsupported operator: &quot; + op);</span>
+        }
+    }
+
+    private boolean compareDouble(double a, String op, double b) {
+<span class="nc bnc" id="L134" title="All 7 branches missed.">        switch (op) {</span>
+            case &quot;&gt;&quot;:
+<span class="nc bnc" id="L136" title="All 2 branches missed.">                return a &gt; b;</span>
+            case &quot;&lt;&quot;:
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                return a &lt; b;</span>
+            case &quot;&gt;=&quot;:
+<span class="nc bnc" id="L140" title="All 2 branches missed.">                return a &gt;= b;</span>
+            case &quot;&lt;=&quot;:
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                return a &lt;= b;</span>
+            case &quot;=&quot;:
+<span class="nc bnc" id="L144" title="All 2 branches missed.">                return a == b;</span>
+            case &quot;!=&quot;:
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                return a != b;</span>
+            default:
+<span class="nc" id="L148">                throw new IllegalArgumentException(&quot;Unsupported operator: &quot; + op);</span>
+        }
+    }
+
+    private boolean compareString(String a, String op, String b) {
+<span class="pc bpc" id="L153" title="1 of 3 branches missed.">        switch (op) {</span>
+            case &quot;=&quot;:
+<span class="fc" id="L155">                return a.equals(b);</span>
+            case &quot;!=&quot;:
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">                return !a.equals(b);</span>
+            default:
+<span class="nc" id="L159">                throw new IllegalArgumentException(&quot;Unsupported operator for String: &quot; + op);</span>
+        }
+    }
+
+    public Series&lt;?&gt; getColumn(String name) {
+<span class="fc" id="L164">        return columnMap.get(name);</span>
+    }
+
+    public double mean(String column) {
+<span class="fc" id="L168">        Series&lt;?&gt; series = columnMap.get(column);</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        if (!(series instanceof NumericSeries&lt;?&gt;))</span>
+<span class="nc" id="L170">            throw new IllegalArgumentException(&quot;Column is not numeric.&quot;);</span>
+<span class="fc" id="L171">        return ((NumericSeries&lt;?&gt;) series).mean();</span>
+    }
+
+    public double max(String column) {
+<span class="fc" id="L175">        Series&lt;?&gt; series = columnMap.get(column);</span>
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">        if (!(series instanceof NumericSeries&lt;?&gt;))</span>
+<span class="nc" id="L177">            throw new IllegalArgumentException(&quot;Column is not numeric.&quot;);</span>
+<span class="fc" id="L178">        return ((NumericSeries&lt;?&gt;) series).max().doubleValue();</span>
+    }
+
+    public double min(String column) {
+<span class="fc" id="L182">        Series&lt;?&gt; series = columnMap.get(column);</span>
+<span class="pc bpc" id="L183" title="1 of 2 branches missed.">        if (!(series instanceof NumericSeries&lt;?&gt;))</span>
+<span class="nc" id="L184">            throw new IllegalArgumentException(&quot;Column is not numeric.&quot;);</span>
+<span class="fc" id="L185">        return ((NumericSeries&lt;?&gt;) series).min().doubleValue();</span>
+    }
+
+    public double sum(String column) {
+<span class="fc" id="L189">        Series&lt;?&gt; series = columnMap.get(column);</span>
+<span class="pc bpc" id="L190" title="1 of 2 branches missed.">        if (!(series instanceof NumericSeries&lt;?&gt;))</span>
+<span class="nc" id="L191">            throw new IllegalArgumentException(&quot;Column is not numeric.&quot;);</span>
+<span class="fc" id="L192">        return ((NumericSeries&lt;?&gt;) series).sum().doubleValue();</span>
+    }
+
+    public long count(String column) {
+<span class="fc" id="L196">        return columnMap.get(column).count();</span>
+    }
+
+    public int size() {
+<span class="fc" id="L200">        return rowCount;</span>
+    }
+
+}   
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

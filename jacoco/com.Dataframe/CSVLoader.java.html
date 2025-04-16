@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CSVLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">dataframe</a> &gt; <a href="index.source.html" class="el_package">com.Dataframe</a> &gt; <span class="el_source">CSVLoader.java</span></div><h1>CSVLoader.java</h1><pre class="source lang-java linenums">package com.Dataframe;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.Series.DoubleSeries;
+import com.Series.IntSeries;
+import com.Series.Series;
+import com.Series.StringSeries;
+
+<span class="nc" id="L16">public class CSVLoader {</span>
+    public static DataFrame fromCSV(String filePath) throws IOException {
+<span class="fc" id="L18">        List&lt;String[]&gt; csvData = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L19">        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {</span>
+            String line;
+<span class="fc bfc" id="L21" title="All 2 branches covered.">            while ((line = br.readLine()) != null) {</span>
+<span class="fc" id="L22">                csvData.add(line.split(&quot;,(?=([^\&quot;']*[\&quot;'][^\&quot;']*[\&quot;'])*[^\&quot;']*$)&quot;, -1));</span>
+            }
+<span class="fc" id="L24">        } catch (java.io.FileNotFoundException e) {</span>
+<span class="fc" id="L25">            throw new IllegalArgumentException(&quot;CSV file does not exist: &quot; + filePath);</span>
+<span class="fc" id="L26">        }</span>
+
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        if (csvData.isEmpty()) {</span>
+<span class="nc" id="L29">            throw new IllegalArgumentException(&quot;CSV file is empty.&quot;);</span>
+        }
+
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (csvData.size() == 1) {</span>
+<span class="nc" id="L33">            throw new IllegalArgumentException(&quot;CSV file has headers but no data rows.&quot;);</span>
+        }
+
+<span class="fc" id="L36">        String[] headers = Arrays.stream(csvData.get(0)).map(String::trim).toArray(String[]::new);</span>
+<span class="fc" id="L37">        int colCount = headers.length;</span>
+
+<span class="fc" id="L39">        List&lt;List&lt;String&gt;&gt; rawColumns = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        for (int i = 0; i &lt; colCount; i++) {</span>
+<span class="fc" id="L41">            rawColumns.add(new ArrayList&lt;&gt;());</span>
+        }
+
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        for (int i = 1; i &lt; csvData.size(); i++) {</span>
+<span class="fc" id="L45">            String[] row = csvData.get(i);</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">            if (row.length != colCount) {</span>
+<span class="nc" id="L47">                throw new IllegalArgumentException(&quot;Inconsistent columns in row &quot; + i);</span>
+            }
+<span class="fc bfc" id="L49" title="All 2 branches covered.">            for (int j = 0; j &lt; colCount; j++) {</span>
+<span class="fc" id="L50">                rawColumns.get(j).add(row[j].trim().replaceAll(&quot;^['\&quot;]|['\&quot;]$&quot;, &quot;&quot;));</span>
+            }
+        }
+
+<span class="fc" id="L54">        List&lt;Series&lt;?&gt;&gt; parsedColumns = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        for (int i = 0; i &lt; colCount; i++) {</span>
+<span class="fc" id="L56">            String header = headers[i];</span>
+<span class="fc" id="L57">            List&lt;String&gt; data = rawColumns.get(i);</span>
+<span class="fc" id="L58">            DataType type = inferType(data);</span>
+<span class="fc" id="L59">            parsedColumns.add(createSeries(header, data, type));</span>
+        }
+
+<span class="fc" id="L62">        return new DataFrame(parsedColumns);</span>
+    }
+
+    private static DataType inferType(List&lt;String&gt; data) {
+<span class="fc" id="L66">        boolean isInteger = true;</span>
+<span class="fc" id="L67">        boolean isDouble = true;</span>
+
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        for (String s : data) {</span>
+<span class="pc bpc" id="L70" title="2 of 6 branches missed.">            if (s == null || s.isEmpty() || s.equals(&quot;null&quot;))</span>
+<span class="nc" id="L71">                continue;</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (isInteger) {</span>
+                try {
+<span class="fc" id="L74">                    Integer.parseInt(s);</span>
+<span class="fc" id="L75">                } catch (NumberFormatException e) {</span>
+<span class="fc" id="L76">                    isInteger = false;</span>
+<span class="fc" id="L77">                }</span>
+            }
+<span class="fc bfc" id="L79" title="All 2 branches covered.">            if (isDouble) {</span>
+                try {
+<span class="fc" id="L81">                    Double.parseDouble(s);</span>
+<span class="fc" id="L82">                } catch (NumberFormatException e) {</span>
+<span class="fc" id="L83">                    isDouble = false;</span>
+<span class="fc" id="L84">                }</span>
+            }
+<span class="fc" id="L86">        }</span>
+
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (isInteger)</span>
+<span class="fc" id="L89">            return DataType.INTEGER;</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        if (isDouble)</span>
+<span class="fc" id="L91">            return DataType.DOUBLE;</span>
+<span class="fc" id="L92">        return DataType.STRING;</span>
+    }
+
+    private static Series&lt;?&gt; createSeries(String name, List&lt;String&gt; data, DataType type) {
+<span class="pc bpc" id="L96" title="1 of 4 branches missed.">        List&lt;String&gt; sanitizedData = data.stream().map(s -&gt; s.isEmpty() || s.equals(&quot;null&quot;) ? null : s)</span>
+<span class="fc" id="L97">                .collect(Collectors.toList());</span>
+<span class="fc bfc" id="L98" title="All 3 branches covered.">        switch (type) {</span>
+            case INTEGER:
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">                Integer[] intData = sanitizedData.stream().map(s -&gt; s == null ? null : Integer.parseInt(s))</span>
+<span class="fc" id="L101">                        .toArray(Integer[]::new);</span>
+<span class="fc" id="L102">                return new IntSeries(name, intData);</span>
+            case DOUBLE:
+<span class="fc bfc" id="L104" title="All 2 branches covered.">                Double[] doubleData = sanitizedData.stream().map(s -&gt; s == null ? null : Double.parseDouble(s))</span>
+<span class="fc" id="L105">                        .toArray(Double[]::new);</span>
+<span class="fc" id="L106">                return new DoubleSeries(name, doubleData);</span>
+            default:
+<span class="fc" id="L108">                String[] strData = sanitizedData.toArray(new String[0]);</span>
+<span class="fc" id="L109">                return new StringSeries(name, strData);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

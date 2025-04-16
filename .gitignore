@@ -6,4 +6,4 @@ target/
 *.iml
 *.log
 *.csv
-.vscode/
+.vscode

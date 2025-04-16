@@ -1,0 +1,41 @@
+name: Deploy Site and Javadoc
+
+on:
+  push:
+    branches: [main, dev]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build site and javadoc
+        run: |
+          mvn clean install
+          mvn site
+          mvn javadoc:javadoc
+
+      - name: Prepare GitHub Pages content
+        run: |
+          mkdir -p target/gh-pages
+          cp -r target/site/* target/gh-pages/
+          cp -r target/site/apidocs target/gh-pages/apidocs
+          cp readme.html target/gh-pages/index.html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/gh-pages

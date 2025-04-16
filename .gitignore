@@ -7,3 +7,4 @@ target/
 *.log
 *.csv
 .vscode
+!target/gh-pages/

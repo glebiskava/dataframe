@@ -4,6 +4,8 @@
 [![Java 17](https://img.shields.io/badge/Java-17-E78B48)](https://adoptium.net/)
 [![Maven](https://img.shields.io/badge/Maven-3.8.6-F7374F)](https://maven.apache.org/)
 ![Coverage](https://img.shields.io/badge/Coverage-61%25-green?logo=jacoco)
+[![Docker](https://img.shields.io/badge/Docker-Image-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/ouassimboulkamh/dataframe)
+
 
 A Java library for tabular data manipulation with comprehensive CSV support and data analysis capabilities.
 

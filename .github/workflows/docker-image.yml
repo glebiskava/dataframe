@@ -24,4 +24,4 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: ouassimoulkamh/dataframe:latest
+        tags: ouassimboulkamh/dataframe:latest

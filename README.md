@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/LICENSE-MIT-1B56FD?logo=github&logoColor=white)](https://github.com/your-username/your-repo-name/blob/main/LICENSE)
 [![Java SDK](https://img.shields.io/badge/JAVA-17.0.14-E78B48?logo=openjdk&logoColor=white)](https://www.oracle.com/java/technologies/javase/17-0-14-relnotes.html) 
 [![Maven](https://img.shields.io/badge/Maven-3.8.6-F7374F?logo=apachemaven)](https://maven.apache.org/download.cgi)
-![Coverage](https://img.shields.io/badge/Coverage-xx%25-green?logo=jacoco)
+![Coverage](https://img.shields.io/badge/Coverage-80%25-green?logo=jacoco)
 
 This is a project on making a Java library for tabular data manipulation with CSV support
 
